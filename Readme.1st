@@ -1,0 +1,19 @@
+git clone https://github.com/Chris-Meyers/OnlinePythonTutor.git
+
+pulled everythin from my fork on github to this area. 
+
+Later a "git push origin master" will update my fork on github
+
+My password 7t..
+
+Logged in I added an ssh public key for this computer
+   cd
+   ssh-keygen
+
+   created file .ssh/id_rsa.pub
+   copy/paste contents to
+
+   on github - account settings (tools symbol)
+   add key
+     Title:  Chris Meyers on ASUS
+     paste in the key below
