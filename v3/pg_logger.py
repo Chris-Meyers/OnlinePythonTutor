@@ -107,6 +107,9 @@ else:
   assert type(__builtins__) is types.ModuleType
   BUILTIN_IMPORT = __builtins__.__import__
 
+# Bring these classes in for use with Algorithm use - Chris
+from matrix    import Matrix
+from htmlFrame import HtmlFrame
 
 # whitelist of module imports
 ALLOWED_STDLIB_MODULE_IMPORTS = ('math', 'random', 'datetime',
@@ -147,6 +150,8 @@ def __restricted_import__(*args):
 
     if args[0] in CUSTOM_MODULE_IMPORTS:
       # add special magical functions to custom imported modules
+      setattr(imported_mod, 'HtmlFrame', HtmlFrame) # Chris
+      setattr(imported_mod, 'Matrix', Matrix)       # Chris
       setattr(imported_mod, 'setHTML', setHTML)
       setattr(imported_mod, 'setCSS', setCSS)
       setattr(imported_mod, 'setJS', setJS)
@@ -1021,6 +1026,9 @@ class PGLogger(bdb.Bdb):
         # TODO: we can disable these imports here, but a crafty user can
         # always get a hold of them by importing one of the external
         # modules, so there's no point in trying security by obscurity
+        user_builtins['HtmlFrame'] = HtmlFrame # Chris
+        user_builtins['Matrix']    = Matrix    # Chris
+
         user_builtins['setHTML'] = setHTML
         user_builtins['setCSS'] = setCSS
         user_builtins['setJS'] = setJS
