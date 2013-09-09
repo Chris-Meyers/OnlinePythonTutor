@@ -4,13 +4,21 @@
 #
 
 class Matrix :
-    def __init__ (self, nrows=0, ncols=0, Expand=True) :
+    def __init__ (self, nrows=0, ncols=0,
+                  dftFormat="", dftStyle="",
+                  tableAttr="", tableHeaders=None,
+                  Expand=True) :
         self.nrows = nrows
         self.ncols = ncols
         self.values = {}
         if Expand :
-            self.format = Matrix(nrows, ncols, False)
-            self.style  = Matrix(nrows, ncols, False)
+            # get attributes only on the main Matrix
+            self.dftFormat    = dftFormat
+            self.dftStyle     = dftStyle
+            self.tableAttr    = tableAttr
+            self.tableHeaders = tableHeaders
+            self.format = Matrix(nrows, ncols, Expand=False)
+            self.style  = Matrix(nrows, ncols, Expand=False)
 
     def __getitem__(self, coords) :
         row, col = coords
@@ -47,9 +55,9 @@ class Matrix :
 #   setcol... functions here
 #===========================================
 
-    def renderHtml(self, tableStyle="", headers=None,
-                   cellStyle="", cellFormat="") :
-        lins = ["<table %s>" % tableStyle]
+    def renderHtml(self) :
+        lins = ["<table %s>" % self.tableAttr]
+        headers = self.tableHeaders
         if headers :
             lins.append("<tr><th>"+"</th><th>".join(map(str,headers))+
                         "</th></tr>")
@@ -63,9 +71,11 @@ class Matrix :
             for c in range(self.ncols) :
                 val = vals[c]; style=styles[c]; format=formats[c]
                 if val == None : val = ""
-                if not format : format = cellFormat
-                if format : val = format % val
-                if not style : style = cellStyle
+                if not format : format = self.dftFormat
+                if format :
+                    if type(format)==type("") : val = format % val
+                    else                      : val = format(val)
+                if not style : style = self.dftStyle
                 if style : cell = '<td style="%s">%s</td>' % (style,val)
                 else     : cell = '<td>%s</td>' % val
                 rowLin.append(cell)
@@ -76,6 +86,26 @@ class Matrix :
 
     def __str__ (self) :
         return "Matrix-%dx%d" % (self.nrows,self.ncols)
+
+
+def dictToLol(dic, keys=None) :
+    "Convert dict to a list of lists"
+    if not keys :
+        keys = dic.keys(); keys.sort()
+    lists = []
+    for key in keys :
+        lists.append([key]+list(dic[key]))
+    return lists
+
+def lolMatrix(lists) :
+    "Make matrix from a list of lists"
+    nRows = len(lists)
+    nCols = max([len(l) for l in lists])
+    mat = Matrix(nRows,nCols)
+    for row in range(len(lists)) :
+        mat.setrowEach(row, lists[row])
+        mat.style[row,0]="background-color:lightgreen"
+    return mat
 
 class Stack (Matrix) :
     def __init__(self, depth) :
@@ -94,4 +124,3 @@ class Stack (Matrix) :
             self[self.tos,0] = None
             self.tos -= 1
             return value
-
