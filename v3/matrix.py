@@ -5,7 +5,7 @@
 
 class Matrix :
     def __init__ (self, nrows=0, ncols=0,
-                  dftFormat="", dftStyle="",
+                  dftFormat="", dftStyle="", title="",
                   tableAttr="", tableHeaders=None,
                   Expand=True) :
         self.nrows = nrows
@@ -15,6 +15,7 @@ class Matrix :
             # get attributes only on the main Matrix
             self.dftFormat    = dftFormat
             self.dftStyle     = dftStyle
+            self.title        = title
             self.tableAttr    = tableAttr
             self.tableHeaders = tableHeaders
             self.format = Matrix(nrows, ncols, Expand=False)
@@ -56,7 +57,8 @@ class Matrix :
 #===========================================
 
     def renderHtml(self) :
-        lins = ["<table %s>" % self.tableAttr]
+        lins = ["","<table %s>" % self.tableAttr]
+        if self.title : lins[0] = "<div>%s</div>" % self.title
         headers = self.tableHeaders
         if headers :
             lins.append("<tr><th>"+"</th><th>".join(map(str,headers))+
@@ -87,6 +89,7 @@ class Matrix :
     def __str__ (self) :
         return "Matrix-%dx%d" % (self.nrows,self.ncols)
 
+typeSeq = (type([]), type((1,2)))
 
 def dictToLol(dic, keys=None) :
     "Convert dict to a list of lists"
@@ -94,7 +97,9 @@ def dictToLol(dic, keys=None) :
         keys = dic.keys(); keys.sort()
     lists = []
     for key in keys :
-        lists.append([key]+list(dic[key]))
+        val = dic[key]
+        if type(val) not in typeSeq : val = [val]
+        lists.append([key]+list(val))
     return lists
 
 def lolMatrix(lists) :
@@ -103,7 +108,9 @@ def lolMatrix(lists) :
     nCols = max([len(l) for l in lists])
     mat = Matrix(nRows,nCols)
     for row in range(len(lists)) :
-        mat.setrowEach(row, lists[row])
+        vals = lists[row]
+        if type(vals) != list : vals = [vals] # make sing col
+        mat.setrowEach(row, vals)
         mat.style[row,0]="background-color:lightgreen"
     return mat
 
