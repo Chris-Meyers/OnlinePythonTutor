@@ -1,16 +1,21 @@
-# m a t r i x . p y
+#  m a t r i x . p y
 #
 #  Support for 2d matrix that renders to an HTML table
 #
+#  Chris Meyers. 09/25/2013
+#
+
+dftTableAttr = 'cellspacing="0" cellpadding="10"'
 
 class Matrix :
-    def __init__ (self, nrows=0, ncols=0,
+    def __init__ (self, nrows=1, ncols=1, data=None,
                   dftFormat="", dftStyle="", title="",
-                  tableAttr="", tableHeaders=None,
+                  tableAttr=dftTableAttr, tableHeaders=None,
                   Expand=True) :
         self.nrows = nrows
         self.ncols = ncols
         self.values = {}
+        self.expanded = Expand
         if Expand :
             # get attributes only on the main Matrix
             self.dftFormat    = dftFormat
@@ -20,6 +25,10 @@ class Matrix :
             self.tableHeaders = tableHeaders
             self.format = Matrix(nrows, ncols, Expand=False)
             self.style  = Matrix(nrows, ncols, Expand=False)
+        if data :
+            if type(data) == type({}) : data=dictToLol(data)
+            if type(data) == type([]) :
+                self.populate(data)
 
     def __getitem__(self, coords) :
         row, col = coords
@@ -30,17 +39,24 @@ class Matrix :
         self.values[(row,col)] = value
         self.nrows = max(self.nrows,row+1)
         self.ncols = max(self.ncols,col+1)
+        if self.expanded :
+            self.format.nrows = self.nrows
+            self.format.ncols = self.ncols
+            self.style.nrows  = self.nrows
+            self.style.ncols  = self.ncols
         return value
 
 #===========================================
 
-    def setrowEach(self, row, values) :
+    def setrowVals(self, row, values) :
+        "set each column to a seperate value"
         col = 0
         for col in range(len(values)) :
             self.__setitem__((row,col),values[col])
             col += 1
 
-    def setrowAll(self, row, value) :
+    def setrowVal(self, row, value) :
+        "set all columns to the same value"
         col = 0
         while col < self.ncols :
             self.__setitem__((row,col),value)
@@ -53,10 +69,39 @@ class Matrix :
         return vals
 
 #===========================================
-#   setcol... functions here
+
+    def setcolVals(self, col, values) :
+        "set each row to a seperate value"
+        row = 0
+        for row in range(len(values)) :
+            self.__setitem__((row,col),values[row])
+            row += 1
+
+    def setcolVal(self, col, value) :
+        "set all rowumns to the same value"
+        row = 0
+        while row < self.nrows :
+            self.__setitem__((row,col),value)
+            row += 1
+
+    def getcol (self, col) :
+        vals = []
+        for r in range(self.nrows) :
+            vals.append(self.__getitem__( (r,col) ))
+        return vals
+
 #===========================================
 
-    def renderHtml(self) :
+    def populate(self, lists) :
+        "Fill self from a list of lists"
+        nRows = len(lists)
+        nCols = max([len(l) for l in lists])
+        for row in range(len(lists)) :
+            vals = lists[row]
+            if type(vals) != list : vals = [vals] # make sing col
+            self.setrowVals(row, vals)
+
+    def renderHtml(self,wrap=None) :
         lins = ["","<table %s>" % self.tableAttr]
         if self.title : lins[0] = "<div>%s</div>" % self.title
         headers = self.tableHeaders
@@ -80,6 +125,7 @@ class Matrix :
                 if not style : style = self.dftStyle
                 if style : cell = '<td style="%s">%s</td>' % (style,val)
                 else     : cell = '<td>%s</td>' % val
+                if wrap and c>0 and c%wrap==0 : cell="</tr><tr>"+cell
                 rowLin.append(cell)
             rowLin.append("</tr>")
             lins.append("".join(rowLin))
@@ -89,12 +135,13 @@ class Matrix :
     def __str__ (self) :
         return "Matrix-%dx%d" % (self.nrows,self.ncols)
 
+#===========================================
+
 typeSeq = (type([]), type((1,2)))
 
-def dictToLol(dic, keys=None) :
+def dictToLol(dic) :
     "Convert dict to a list of lists"
-    if not keys :
-        keys = dic.keys(); keys.sort()
+    keys = dic.keys(); keys.sort()
     lists = []
     for key in keys :
         val = dic[key]
@@ -102,32 +149,3 @@ def dictToLol(dic, keys=None) :
         lists.append([key]+list(val))
     return lists
 
-def lolMatrix(lists) :
-    "Make matrix from a list of lists"
-    nRows = len(lists)
-    nCols = max([len(l) for l in lists])
-    mat = Matrix(nRows,nCols)
-    for row in range(len(lists)) :
-        vals = lists[row]
-        if type(vals) != list : vals = [vals] # make sing col
-        mat.setrowEach(row, vals)
-        mat.style[row,0]="background-color:lightgreen"
-    return mat
-
-class Stack (Matrix) :
-    def __init__(self, depth) :
-        Matrix.__init__(self,depth,1)
-        self.tos = -1
-        print self.__dict__
-        
-    def push(self, value) :
-        self.tos += 1
-        self[tos,0] = value
-        
-    def pop(self) :
-        if self.tos < 0 : return None
-        else :
-            value = self[self.tos,0]
-            self[self.tos,0] = None
-            self.tos -= 1
-            return value
