@@ -92,7 +92,7 @@ class HtmlFrame :
         html = re.sub("xxx", name, open("%s.html" % wrapper).read())
         html = re.sub("%sJavascript"%name, js, html)
         
-        #html = expandIncludes(html)
+        html = expandIncludes(html)
         return html
 
 def expandIncludes(html) :
