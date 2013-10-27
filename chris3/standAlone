@@ -1,0 +1,2 @@
+:
+python ../v3/standAlone/standAlone.py $*
