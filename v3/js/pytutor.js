@@ -376,7 +376,7 @@ ExecutionVisualizer.prototype.render = function() {
   }
   else if (this.params.pyCrazyMode) {
       myViz.domRoot.find('#legendDiv')
-          .append('<a href="https://github.com/pgbovine/Py2crazy">Py2crazy</a> mode!')
+          .append('<a href="https:/'+'/github.com/pgbovine/Py2crazy">Py2crazy</a> mode!')
           .append(' Stepping through (roughly) each executed expression. Color codes:<p/>')
           .append('<span class="pycrazy-highlight-prev">expression that just executed</span><br/>')
           .append('<span class="pycrazy-highlight-cur">next expression to execute</span>');
@@ -1623,7 +1623,7 @@ ExecutionVisualizer.prototype.updateOutput = function(smoothTransition) {
       // NB: when jQuery injects JS, it executes the code immediately
       // and then removes the entire <script> block from the DOM
       // http://stackoverflow.com/questions/610995/jquery-cant-append-script-element
-      myViz.domRoot.find("#htmlOutputDiv").append('<script type="text/javascript">' + curEntry.js_output + '</script>');
+      myViz.domRoot.find("#htmlOutputDiv").append('<scr'+'ipt type="text/javascript">' + curEntry.js_output + '</scr'+'ipt>');
     }
   }
 
